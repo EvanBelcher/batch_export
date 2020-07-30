@@ -682,7 +682,7 @@ MuseScore {
   // when creating a file name
   function createDefaultFileName(fn) {
     fn = fn.trim()
-    fn = fn.replace(/ /g,"_")
+    // fn = fn.replace(/ /g,"_")
     fn = fn.replace(/\n/g,"_")
     fn = fn.replace(/[\\\/:\*\?\"<>|]/g,"_")
     return fn
@@ -731,16 +731,27 @@ MuseScore {
       var targetBase;
       if (differentExportPath.checked && !traverseSubdirs.checked)
         targetBase = targetFolderDialog.folderPath + "/" + fileName 
-                                    + "-" + createDefaultFileName(partTitle) + "." 
+                                    + " - " + createDefaultFileName(partTitle) + "." 
       else
-        targetBase = filePath + fileName + "-" + createDefaultFileName(partTitle) + "." 
+        targetBase = filePath + fileName + " - " + createDefaultFileName(partTitle) + "." 
 
       // write for all target formats
       for (var j = 0; j < outFormats.extensions.length; j++) {
+        if(partTitle.endsWith('+ Base') && outFormats.extensions[j] === 'pdf'){
+          resultText.append('Base pdf file "%1" skipped'.arg(partTitle))
+          continue
+        }
+
+        if(partTitle.endsWith('+ NOPDF') && outFormats.extensions[j] === 'pdf'){
+          resultText.append('NOPDF file "%1" skipped'.arg(partTitle))
+          continue
+        }
+
         // get modification time of destination file (if it exists)
         // modifiedTime() will return 0 for non-existing files
         // if src is newer than existing write this file
         fileExcerpt.source = targetBase + outFormats.extensions[j]
+        fileExcerpt.source = fileExcerpt.source.replace(' + NOPDF', '')
         if (srcModifiedTime > fileExcerpt.modifiedTime()) {
           var res = writeScore(thisScore, fileExcerpt.source, outFormats.extensions[j])
           if (res) 
